@@ -1,0 +1,392 @@
+<!DOCTYPE html>
+<html lang="az">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Baker Tilly Azerbaijan — Staff Card</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Segoe UI', Arial, sans-serif; background: #f0f4f8; min-height: 100vh; }
+
+  /* HEADER */
+  .header {
+    background: #1a3a5c;
+    padding: 16px 24px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+  }
+  .header-logo {
+    width: 38px; height: 38px;
+    background: white;
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-weight: 900; font-size: 14px; color: #1a3a5c;
+    flex-shrink: 0;
+  }
+  .header-title { color: white; font-size: 17px; font-weight: 600; }
+  .header-sub { color: rgba(255,255,255,0.65); font-size: 12px; }
+
+  /* SCREEN MANAGEMENT */
+  .screen { display: none; }
+  .screen.active { display: block; }
+
+  /* DEPARTMENT SCREEN */
+  .page-title {
+    text-align: center;
+    padding: 28px 20px 12px;
+    font-size: 20px;
+    font-weight: 700;
+    color: #1a3a5c;
+  }
+  .page-sub {
+    text-align: center;
+    font-size: 13px;
+    color: #888;
+    margin-bottom: 24px;
+  }
+  .dept-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+    gap: 14px;
+    padding: 0 20px 30px;
+    max-width: 700px;
+    margin: 0 auto;
+  }
+  .dept-card {
+    background: white;
+    border-radius: 14px;
+    padding: 22px 12px;
+    text-align: center;
+    cursor: pointer;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.07);
+    transition: transform 0.15s, box-shadow 0.15s;
+    border: 2px solid transparent;
+  }
+  .dept-card:hover { transform: translateY(-3px); box-shadow: 0 6px 18px rgba(26,58,92,0.15); border-color: #1a7a5c; }
+  .dept-icon { font-size: 32px; margin-bottom: 10px; }
+  .dept-name { font-size: 13px; font-weight: 600; color: #1a3a5c; }
+  .dept-count { font-size: 11px; color: #aaa; margin-top: 4px; }
+
+  /* EMPLOYEE SCREEN */
+  .back-btn {
+    display: inline-flex; align-items: center; gap: 6px;
+    margin: 20px 20px 8px;
+    padding: 8px 14px;
+    background: white;
+    border: 1.5px solid #d0dae5;
+    border-radius: 20px;
+    font-size: 13px;
+    color: #1a3a5c;
+    cursor: pointer;
+    font-weight: 500;
+  }
+  .back-btn:hover { background: #eaf2ff; }
+  .dept-header {
+    padding: 0 20px 16px;
+    font-size: 18px;
+    font-weight: 700;
+    color: #1a3a5c;
+  }
+  .emp-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+    gap: 14px;
+    padding: 0 20px 30px;
+    max-width: 700px;
+    margin: 0 auto;
+  }
+  .emp-card {
+    background: white;
+    border-radius: 14px;
+    padding: 18px 12px;
+    text-align: center;
+    cursor: pointer;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.07);
+    transition: transform 0.15s, box-shadow 0.15s;
+    border: 2px solid transparent;
+  }
+  .emp-card:hover { transform: translateY(-3px); box-shadow: 0 6px 18px rgba(26,58,92,0.15); border-color: #1a7a5c; }
+  .emp-avatar {
+    width: 72px; height: 72px;
+    border-radius: 50%;
+    object-fit: cover;
+    margin: 0 auto 10px;
+    display: block;
+    background: #e0eaf5;
+    border: 3px solid #d0dae5;
+  }
+  .emp-name { font-size: 13px; font-weight: 600; color: #1a3a5c; line-height: 1.3; }
+  .emp-role { font-size: 11px; color: #aaa; margin-top: 3px; }
+
+  /* MODAL */
+  .modal-overlay {
+    display: none;
+    position: fixed; inset: 0;
+    background: rgba(0,0,0,0.55);
+    z-index: 100;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+  }
+  .modal-overlay.open { display: flex; }
+  .modal {
+    background: white;
+    border-radius: 20px;
+    max-width: 340px;
+    width: 100%;
+    overflow: hidden;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+    animation: popIn 0.2s ease;
+  }
+  @keyframes popIn {
+    from { transform: scale(0.9); opacity: 0; }
+    to   { transform: scale(1);   opacity: 1; }
+  }
+  .modal-top {
+    background: linear-gradient(135deg, #1a3a5c, #2d6a9f);
+    padding: 28px 20px 20px;
+    text-align: center;
+    position: relative;
+  }
+  .modal-close {
+    position: absolute; top: 12px; right: 14px;
+    background: rgba(255,255,255,0.2);
+    border: none; color: white;
+    width: 28px; height: 28px;
+    border-radius: 50%;
+    font-size: 16px; cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .modal-photo {
+    width: 100px; height: 100px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 4px solid white;
+    margin-bottom: 12px;
+    background: #cdd9e5;
+  }
+  .modal-name { color: white; font-size: 18px; font-weight: 700; }
+  .modal-role { color: rgba(255,255,255,0.75); font-size: 13px; margin-top: 4px; }
+  .modal-body { padding: 20px; }
+  .modal-row {
+    display: flex; align-items: center; gap: 10px;
+    padding: 10px 0;
+    border-bottom: 1px solid #f0f0f0;
+    font-size: 14px;
+  }
+  .modal-row:last-child { border-bottom: none; }
+  .modal-row-icon { font-size: 18px; width: 24px; text-align: center; }
+  .modal-row-label { color: #888; font-size: 11px; }
+  .modal-row-val { color: #1a3a5c; font-weight: 600; }
+  .modal-badge {
+    display: inline-block;
+    background: #e8f5e9;
+    color: #2e7d32;
+    font-size: 11px;
+    font-weight: 700;
+    padding: 3px 10px;
+    border-radius: 20px;
+    margin-top: 12px;
+  }
+  .modal-footer {
+    background: #f8f9fa;
+    padding: 12px 20px;
+    text-align: center;
+    font-size: 11px;
+    color: #bbb;
+  }
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<div class="header">
+  <div class="header-logo">BT</div>
+  <div>
+    <div class="header-title">Baker Tilly Azerbaijan</div>
+    <div class="header-sub">Employee Loyalty Program</div>
+  </div>
+</div>
+
+<!-- SCREEN 1: DEPARTMENTS -->
+<div class="screen active" id="screen-dept">
+  <div class="page-title">Şöbə seçin</div>
+  <div class="page-sub">Əməkdaşı tapmaq üçün şöbəni seçin</div>
+  <div class="dept-grid" id="dept-grid"></div>
+</div>
+
+<!-- SCREEN 2: EMPLOYEES -->
+<div class="screen" id="screen-emp">
+  <button class="back-btn" onclick="goBack()">← Geri</button>
+  <div class="dept-header" id="dept-header"></div>
+  <div class="emp-grid" id="emp-grid"></div>
+</div>
+
+<!-- MODAL -->
+<div class="modal-overlay" id="modal" onclick="closeModal(event)">
+  <div class="modal">
+    <div class="modal-top">
+      <button class="modal-close" onclick="closeModalBtn()">✕</button>
+      <img class="modal-photo" id="m-photo" src="" alt="">
+      <div class="modal-name" id="m-name"></div>
+      <div class="modal-role" id="m-role"></div>
+    </div>
+    <div class="modal-body">
+      <div class="modal-row">
+        <span class="modal-row-icon">🏢</span>
+        <div>
+          <div class="modal-row-label">Şöbə</div>
+          <div class="modal-row-val" id="m-dept"></div>
+        </div>
+      </div>
+      <div class="modal-row">
+        <span class="modal-row-icon">🪪</span>
+        <div>
+          <div class="modal-row-label">İşçi ID</div>
+          <div class="modal-row-val" id="m-id"></div>
+        </div>
+      </div>
+      <div class="modal-row">
+        <span class="modal-row-icon">✅</span>
+        <div>
+          <div class="modal-row-label">Status</div>
+          <div class="modal-row-val">Aktiv əməkdaş</div>
+        </div>
+      </div>
+      <div style="text-align:center">
+        <span class="modal-badge">🎁 Loyalty Program üzvü</span>
+      </div>
+    </div>
+    <div class="modal-footer">Baker Tilly Azerbaijan · bakertilly.az</div>
+  </div>
+</div>
+
+<script>
+// =============================================
+// 👇 ƏMƏKDAŞ MƏLUMATLARINı BURAYA DAXİL EDİN
+// =============================================
+const employees = [
+  // AUDIT şöbəsi
+  { id: "BT001", name: "Nigar Həsənova",   role: "Senior Auditor",     dept: "Audit",   photo: "" },
+  { id: "BT002", name: "Rauf Məmmədov",    role: "Audit Manager",      dept: "Audit",   photo: "" },
+  { id: "BT003", name: "Lalə Quliyeva",    role: "Junior Auditor",     dept: "Audit",   photo: "" },
+
+  // TAX şöbəsi
+  { id: "BT004", name: "Elvin Əliyev",     role: "Tax Consultant",     dept: "Tax",     photo: "" },
+  { id: "BT005", name: "Sevinc Nəcəfova",  role: "Tax Manager",        dept: "Tax",     photo: "" },
+
+  // ADVISORY şöbəsi
+  { id: "BT006", name: "Tural İsmayılov",  role: "Advisory Specialist",dept: "Advisory",photo: "" },
+  { id: "BT007", name: "Aytən Babayeva",   role: "Senior Advisor",     dept: "Advisory",photo: "" },
+
+  // ACCOUNTING şöbəsi
+  { id: "BT008", name: "Günay Rzayeva",    role: "Chief Accountant",   dept: "Accounting",photo:"" },
+  { id: "BT009", name: "Kamran Hüseynov",  role: "Accountant",         dept: "Accounting",photo:"" },
+
+  // HR şöbəsi
+  { id: "BT010", name: "Nərmin Sultanova", role: "HR Specialist",      dept: "HR",      photo: "" },
+  { id: "BT011", name: "Orxan Cəfərov",    role: "HR Manager",         dept: "HR",      photo: "" },
+
+  // IT şöbəsi
+  { id: "BT012", name: "Fərid Rəhimov",    role: "IT Specialist",      dept: "IT",      photo: "" },
+
+  // MANAGEMENT
+  { id: "BT013", name: "Arif Mustafayev",  role: "Partner",            dept: "Management", photo: "" },
+  { id: "BT014", name: "Leyla Əhmədova",   role: "Director",           dept: "Management", photo: "" },
+
+  // LEGAL
+  { id: "BT015", name: "Vüsal Kərimov",    role: "Legal Advisor",      dept: "Legal",   photo: "" },
+  { id: "BT016", name: "Şəbnəm Qasımova",  role: "Legal Specialist",   dept: "Legal",   photo: "" },
+];
+// =============================================
+
+const deptIcons = {
+  "Audit":      "📊",
+  "Tax":        "🧾",
+  "Advisory":   "💼",
+  "Accounting": "🗂️",
+  "HR":         "👥",
+  "IT":         "💻",
+  "Management": "🏛️",
+  "Legal":      "⚖️",
+};
+
+function getAvatar(name) {
+  const initials = name.split(' ').map(w => w[0]).join('').substring(0,2).toUpperCase();
+  const colors = ['#2d6a9f','#1a7a5c','#6a2d9f','#9f2d2d','#2d9f6a','#9f6a2d'];
+  const color = colors[name.charCodeAt(0) % colors.length];
+  const svg = `<svg xmlns='http://www.w3.org/2000/svg' width='100' height='100'><rect width='100' height='100' rx='50' fill='${color}'/><text x='50' y='62' text-anchor='middle' font-size='36' font-family='Arial' font-weight='bold' fill='white'>${initials}</text></svg>`;
+  return 'data:image/svg+xml;base64,' + btoa(unescape(encodeURIComponent(svg)));
+}
+
+function buildDepts() {
+  const deptMap = {};
+  employees.forEach(e => {
+    if (!deptMap[e.dept]) deptMap[e.dept] = 0;
+    deptMap[e.dept]++;
+  });
+  const grid = document.getElementById('dept-grid');
+  grid.innerHTML = '';
+  Object.entries(deptMap).forEach(([dept, count]) => {
+    const card = document.createElement('div');
+    card.className = 'dept-card';
+    card.innerHTML = `
+      <div class="dept-icon">${deptIcons[dept] || '🏢'}</div>
+      <div class="dept-name">${dept}</div>
+      <div class="dept-count">${count} əməkdaş</div>
+    `;
+    card.onclick = () => showDept(dept);
+    grid.appendChild(card);
+  });
+}
+
+function showDept(dept) {
+  document.getElementById('screen-dept').classList.remove('active');
+  document.getElementById('screen-emp').classList.add('active');
+  document.getElementById('dept-header').textContent = deptIcons[dept] + '  ' + dept + ' şöbəsi';
+
+  const emps = employees.filter(e => e.dept === dept);
+  const grid = document.getElementById('emp-grid');
+  grid.innerHTML = '';
+  emps.forEach(emp => {
+    const photo = emp.photo || getAvatar(emp.name);
+    const card = document.createElement('div');
+    card.className = 'emp-card';
+    card.innerHTML = `
+      <img class="emp-avatar" src="${photo}" alt="${emp.name}">
+      <div class="emp-name">${emp.name}</div>
+      <div class="emp-role">${emp.role}</div>
+    `;
+    card.onclick = () => openModal(emp);
+    grid.appendChild(card);
+  });
+}
+
+function goBack() {
+  document.getElementById('screen-emp').classList.remove('active');
+  document.getElementById('screen-dept').classList.add('active');
+}
+
+function openModal(emp) {
+  const photo = emp.photo || getAvatar(emp.name);
+  document.getElementById('m-photo').src = photo;
+  document.getElementById('m-name').textContent = emp.name;
+  document.getElementById('m-role').textContent = emp.role;
+  document.getElementById('m-dept').textContent = emp.dept;
+  document.getElementById('m-id').textContent = emp.id;
+  document.getElementById('modal').classList.add('open');
+}
+
+function closeModal(e) {
+  if (e.target.id === 'modal') document.getElementById('modal').classList.remove('open');
+}
+function closeModalBtn() {
+  document.getElementById('modal').classList.remove('open');
+}
+
+buildDepts();
+</script>
+</body>
+</html>
